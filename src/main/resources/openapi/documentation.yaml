@@ -1,0 +1,408 @@
+openapi: 3.0.3
+info:
+  title: Self Journey API
+  description: API for self-reflection and personal growth tracking
+  version: 1.0.0
+  contact:
+    name: Self Journey Team
+    email: support@selfjourney.com
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Users
+    description: User management operations
+  - name: Questions
+    description: Daily questions management
+  - name: Answers
+    description: User answers and AI analysis
+  - name: Progress
+    description: User progress tracking
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check API and database health status
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserDTO'
+    post:
+      tags:
+        - Users
+      summary: Create new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/UserDTO'
+
+  /api/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/UserDTO'
+        '404':
+          description: User not found
+
+  /api/questions:
+    get:
+      tags:
+        - Questions
+      summary: Get all questions
+      responses:
+        '200':
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QuestionDTO'
+
+  /api/questions/today:
+    get:
+      tags:
+        - Questions
+      summary: Get the next question for the user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Next sequential question and progress counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/TodayQuestionResponse'
+
+  /api/answers:
+    post:
+      tags:
+        - Answers
+      summary: Submit answer with AI analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnswerRequest'
+            example:
+              userId: 1
+              questionId: 123
+              content: "오늘의 나는 행복했다"
+              emotion: "joy"
+      responses:
+        '201':
+          description: Answer submitted with AI analysis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/CreateAnswerResponse'
+              example:
+                success: true
+                data:
+                  answerId: 1
+                  prevAnswer: null
+                  savedAt: "2025-01-01T12:00:00"
+                  aiAnalysis:
+                    summary: "긍정적인 하루를 보냈습니다"
+                    keywords: ["행복", "긍정"]
+                    emotion: "joy"
+
+  /api/answers/user/{userId}:
+    get:
+      tags:
+        - Answers
+      summary: Get user's answers
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: List of user answers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AnswerDTO'
+
+  /api/progress/{userId}:
+    get:
+      tags:
+        - Progress
+      summary: Get user progress
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: User progress details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ProgressDTO'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        database:
+          type: string
+          example: "healthy"
+        timestamp:
+          type: string
+          example: "2025-01-01T12:00:00"
+
+    UserDTO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+          enum: [male, female, other]
+        email:
+          type: string
+        createdAt:
+          type: string
+
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+          enum: [male, female, other]
+        email:
+          type: string
+        password:
+          type: string
+
+    QuestionDTO:
+      type: object
+      properties:
+        questionId:
+          type: integer
+          format: int64
+        content:
+          type: string
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+
+    TodayQuestionResponse:
+      type: object
+      properties:
+        question:
+          $ref: '#/components/schemas/QuestionDTO'
+        answeredCount:
+          type: integer
+        totalQuestions:
+          type: integer
+        remainingQuestions:
+          type: integer
+
+    CreateAnswerRequest:
+      type: object
+      required:
+        - userId
+        - questionId
+        - content
+      properties:
+        userId:
+          type: integer
+          format: int64
+        questionId:
+          type: integer
+          format: int64
+        content:
+          type: string
+        emotion:
+          type: string
+          enum: [joy, sadness, anger, fear, neutral]
+
+    CreateAnswerResponse:
+      type: object
+      properties:
+        answerId:
+          type: integer
+          format: int64
+        prevAnswer:
+          $ref: '#/components/schemas/AnswerDTO'
+        savedAt:
+          type: string
+        aiAnalysis:
+          $ref: '#/components/schemas/AiAnalysisResult'
+
+    AnswerDTO:
+      type: object
+      properties:
+        answerId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        questionId:
+          type: integer
+          format: int64
+        content:
+          type: string
+        emotion:
+          type: string
+        aiSummary:
+          type: string
+        aiKeywords:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    AiAnalysisResult:
+      type: object
+      properties:
+        summary:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        emotion:
+          type: string
+        comparison:
+          type: string
+
+    ProgressDTO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        totalAnswers:
+          type: integer
+        consecutiveDays:
+          type: integer
+        lastAnsweredAt:
+          type: string
+        selfAwarenessLevel:
+          type: integer
+        lastReportId:
+          type: integer
+          format: int64
