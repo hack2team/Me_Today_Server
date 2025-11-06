@@ -13,7 +13,7 @@ fun Application.configureDatabase() {
     val dbUser = System.getenv("DB_USER") ?: environment.config.propertyOrNull("database.user")?.getString() ?: "appuser"
     val dbPassword = System.getenv("DB_PASS") ?: environment.config.propertyOrNull("database.password")?.getString() ?: "apppass"
 
-    val jdbcUrl = "jdbc:mysql://$dbHost:$dbPort/$dbName?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+    val jdbcUrl = "jdbc:mysql://$dbHost:$dbPort/$dbName?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&useUnicode=true"
 
     log.info("Connecting to database: $jdbcUrl")
 

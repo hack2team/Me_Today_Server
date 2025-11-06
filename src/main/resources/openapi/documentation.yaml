@@ -7,7 +7,7 @@ info:
     name: Me_Today_Server
 
 servers:
-  - url: https://legendheodongun.com
+  - url: http://192.168.15.153:8080
     description: Local development server
 
 tags:

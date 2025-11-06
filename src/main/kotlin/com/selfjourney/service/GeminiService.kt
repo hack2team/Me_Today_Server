@@ -82,12 +82,10 @@ class GeminiService {
         }
 
         return """
-당신은 전문 심리 분석가입니다. 사용자가 작성한 일기 답변들을 분석하여 다음 4가지 항목에 대한 통찰을 제공해주세요.
-내용적인 부분에서만 제공해주세요. 답변이 너무 짧습니다같은건 안됩니다.
-\n* ** 이런것들 쓰지마시고 평문으로만 써주십시오.
-각 답변은 3~4줄로 만들어주세요.
-
-
+당신은 전문 심리 분석가입니다. 사용자가 작성한 일기 답변들을 분석하여 다음 항목들에 대한 통찰을 제공해주세요.
+내용적인 부분에서만 제공해주세요. 답변이 너무 짧습니다 같은 형식적 평가는 하지 마세요.
+* ** 같은 마크다운 기호를 쓰지 말고 평문으로만 작성해주세요.
+각 답변은 2~3문장으로 간결하게 작성해주세요.
 
 사용자의 답변 히스토리:
 $answersText
@@ -95,8 +93,11 @@ $idealPersonContext
 
 다음 형식으로 정확히 응답해주세요. 각 섹션은 반드시 포함되어야 하며, 구분자를 정확히 지켜주세요:
 
-[장단점]
-사용자의 강점과 약점을 분석하여 작성해주세요. 강점과 약점을 명확히 구분하여 작성하되, 구체적인 예시와 함께 설명해주세요.
+[강점]
+사용자의 강점만 분석하여 작성해주세요. 구체적인 예시와 함께 설명해주세요.
+
+[약점]
+사용자의 약점만 분석하여 작성해주세요. 구체적인 예시와 함께 설명해주세요.
 
 [가치관]
 사용자가 중요하게 생각하는 가치관과 신념을 분석하여 작성해주세요. 답변에서 반복적으로 나타나는 주제나 관심사를 토대로 작성해주세요.
@@ -116,12 +117,15 @@ $idealPersonContext
     private fun parseAnalysisResponse(responseText: String): ParsedAIAnalysis {
         val sections = mutableMapOf<String, String>()
 
-        val strengthsWeaknessesRegex = """\[장단점\]\s*([\s\S]*?)(?=\[가치관\]|\z)""".toRegex()
+        val strengthsRegex = """\[강점\]\s*([\s\S]*?)(?=\[약점\]|\z)""".toRegex()
+        val weaknessesRegex = """\[약점\]\s*([\s\S]*?)(?=\[가치관\]|\z)""".toRegex()
         val valuesRegex = """\[가치관\]\s*([\s\S]*?)(?=\[개선사항\]|\z)""".toRegex()
         val improvementsRegex = """\[개선사항\]\s*([\s\S]*?)(?=\[관계도\]|\z)""".toRegex()
         val relationshipRegex = """\[관계도\]\s*([\s\S]*?)(?=\z)""".toRegex()
 
-        sections["장단점"] = strengthsWeaknessesRegex.find(responseText)?.groupValues?.get(1)?.trim()
+        sections["강점"] = strengthsRegex.find(responseText)?.groupValues?.get(1)?.trim()
+            ?: "분석 결과가 없습니다."
+        sections["약점"] = weaknessesRegex.find(responseText)?.groupValues?.get(1)?.trim()
             ?: "분석 결과가 없습니다."
         sections["가치관"] = valuesRegex.find(responseText)?.groupValues?.get(1)?.trim()
             ?: "분석 결과가 없습니다."
@@ -131,66 +135,12 @@ $idealPersonContext
             ?: "{}"
 
         return ParsedAIAnalysis(
-            strengths = extractStrengths(sections["장단점"] ?: ""),
-            weaknesses = extractWeaknesses(sections["장단점"] ?: ""),
-            values = sections["가치관"] ?: "",
-            improvementSuggestions = sections["개선사항"] ?: "",
+            strengths = sections["강점"] ?: "분석 결과가 없습니다.",
+            weaknesses = sections["약점"] ?: "분석 결과가 없습니다.",
+            values = sections["가치관"] ?: "분석 결과가 없습니다.",
+            improvementSuggestions = sections["개선사항"] ?: "분석 결과가 없습니다.",
             relationshipMap = sections["관계도"] ?: "{}"
         )
-    }
-
-    private fun extractStrengths(strengthsWeaknesses: String): String {
-        val lines = strengthsWeaknesses.split("\n")
-        val strengths = mutableListOf<String>()
-        var isStrength = false
-
-        for (line in lines) {
-            val trimmed = line.trim()
-            if (trimmed.contains("강점", ignoreCase = true) || trimmed.contains("장점", ignoreCase = true)) {
-                isStrength = true
-                continue
-            }
-            if (trimmed.contains("약점", ignoreCase = true) || trimmed.contains("단점", ignoreCase = true)) {
-                isStrength = false
-                continue
-            }
-            if (isStrength && trimmed.isNotEmpty()) {
-                strengths.add(trimmed)
-            }
-        }
-
-        return if (strengths.isNotEmpty()) {
-            strengths.joinToString("\n")
-        } else {
-            strengthsWeaknesses.split("\n").take(3).joinToString("\n")
-        }
-    }
-
-    private fun extractWeaknesses(strengthsWeaknesses: String): String {
-        val lines = strengthsWeaknesses.split("\n")
-        val weaknesses = mutableListOf<String>()
-        var isWeakness = false
-
-        for (line in lines) {
-            val trimmed = line.trim()
-            if (trimmed.contains("약점", ignoreCase = true) || trimmed.contains("단점", ignoreCase = true)) {
-                isWeakness = true
-                continue
-            }
-            if (trimmed.contains("강점", ignoreCase = true) || trimmed.contains("장점", ignoreCase = true)) {
-                isWeakness = false
-                continue
-            }
-            if (isWeakness && trimmed.isNotEmpty()) {
-                weaknesses.add(trimmed)
-            }
-        }
-
-        return if (weaknesses.isNotEmpty()) {
-            weaknesses.joinToString("\n")
-        } else {
-            "분석 결과가 없습니다."
-        }
     }
 
     fun close() {
