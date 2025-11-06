@@ -212,6 +212,31 @@ paths:
                     items:
                       $ref: '#/components/schemas/AnswerDTO'
 
+  /api/answers/user/{userId}/today:
+    get:
+      tags:
+        - Answers
+      summary: Check if the user answered today's question
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Today's answer status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/TodayAnswerStatusResponse'
+
   /api/answers/history/{userId}:
     get:
       tags:
@@ -525,6 +550,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AnswerHistoryItem'
+
+    TodayAnswerStatusResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        answeredToday:
+          type: boolean
+        lastAnsweredAt:
+          type: string
 
     UserReportDTO:
       type: object
