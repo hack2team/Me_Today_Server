@@ -13,7 +13,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class AnswerService(
     private val answerRepository: AnswerRepository,
@@ -37,8 +38,8 @@ class AnswerService(
             id
         }
 
-        // AI 분석 수행 (transaction 외부에서 실행)
-        withContext(Dispatchers.IO) {
+        // AI 분석을 백그라운드에서 비동기로 실행 (응답을 기다리지 않음)
+        GlobalScope.launch(Dispatchers.IO) {
             try {
                 updateAIAnalysis(request.userId, answerId)
             } catch (e: Exception) {
@@ -47,6 +48,7 @@ class AnswerService(
             }
         }
 
+        // 즉시 응답 반환 (AI 분석 완료를 기다리지 않음)
         return CreateAnswerResponse(
             answerId = answerId,
             prevAnswer = prevAnswer,

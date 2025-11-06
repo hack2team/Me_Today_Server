@@ -2,15 +2,18 @@ package com.selfjourney.routes
 
 import com.selfjourney.domain.*
 import com.selfjourney.repository.UserRepository
+import com.selfjourney.repository.UserGoalRepository
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDate
 
 fun Route.userRoutes() {
     val userRepository = UserRepository()
+    val userGoalRepository = UserGoalRepository()
     val allowedDurations = setOf(6, 12, 24)
 
     route("/api/users") {
@@ -63,6 +66,23 @@ fun Route.userRoutes() {
 
             val normalizedRequest = request.copy(planDurationMonths = planMonths)
             val userId = transaction { userRepository.create(normalizedRequest) }
+
+            // 목표 인물상이 있으면 UserGoal 생성
+            if (!request.idealPersonDescription.isNullOrBlank()) {
+                transaction {
+                    val today = LocalDate.now()
+                    val endDate = today.plusMonths(planMonths.toLong())
+                    userGoalRepository.create(
+                        CreateUserGoalRequest(
+                            userId = userId,
+                            startDate = today.toString(),
+                            endDate = endDate.toString(),
+                            idealPersonDescription = request.idealPersonDescription
+                        )
+                    )
+                }
+            }
+
             val user = transaction { userRepository.findById(userId) }
             call.respond(HttpStatusCode.Created, ApiResponse(success = true, data = user))
         }

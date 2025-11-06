@@ -1,14 +1,13 @@
 openapi: 3.0.3
 info:
-  title: Self Journey API
+  title: Me_Today_Server
   description: API for self-reflection and personal growth tracking
   version: 1.0.0
   contact:
-    name: Self Journey Team
-    email: support@selfjourney.com
+    name: Me_Today_Server
 
 servers:
-  - url: http://localhost:8080
+  - url: https://legendheodongun.com
     description: Local development server
 
 tags:
@@ -310,7 +309,8 @@ paths:
     get:
       tags:
         - Answers
-      summary: Get aggregated self-reflection report for a user
+      summary: Get AI-powered analysis report for a user
+      description: Returns the latest AI analysis including strengths, weaknesses, values, improvement suggestions, and relationship map with specific people
       parameters:
         - name: userId
           in: path
@@ -320,7 +320,7 @@ paths:
             format: int64
       responses:
         '200':
-          description: Aggregated report based on all answers
+          description: Latest AI analysis report
           content:
             application/json:
               schema:
@@ -329,7 +329,21 @@ paths:
                   success:
                     type: boolean
                   data:
-                    $ref: '#/components/schemas/UserReportDTO'
+                    $ref: '#/components/schemas/AIAnalysisDTO'
+              example:
+                success: true
+                data:
+                  analysisId: 13
+                  userId: 7
+                  strengths: "주변 사람들과의 긍정적인 상호작용을 통해 에너지를 얻고 어려움을 극복하는 능력, 타인에게 긍정적인 영향을 주는 존재."
+                  weaknesses: "긍정적인 관계에 의존하는 경향이 있을 수 있음."
+                  values: "타인과의 교류, 공감, 지지, 그리고 긍정적인 영향력을 주고받는 관계를 중요하게 생각함."
+                  improvementSuggestions: "다양한 관계 속에서 자신의 역할과 책임을 균형 있게 설정하는 연습이 필요함."
+                  relationshipMap:
+                    민지: "고민을 나누고 격려하는 친구"
+                    부모님: "정신적으로 지지해주는 가족"
+                    준호: "프로젝트에 대해 열정적으로 토론하는 동료"
+                  analyzedAt: "2025-11-06T01:16:09"
 
   /api/progress/{userId}:
     get:
@@ -409,6 +423,10 @@ components:
           type: integer
           nullable: true
           description: "Allowed values: 6, 12, 24 (default 12)"
+        idealPersonDescription:
+          type: string
+          nullable: true
+          description: "Description of the ideal person the user wants to become"
 
     QuestionDTO:
       type: object
@@ -559,3 +577,44 @@ components:
         lastReportId:
           type: integer
           format: int64
+
+    AIAnalysisDTO:
+      type: object
+      properties:
+        analysisId:
+          type: integer
+          format: int64
+          description: "Unique identifier for the analysis"
+        userId:
+          type: integer
+          format: int64
+          description: "User ID this analysis belongs to"
+        strengths:
+          type: string
+          nullable: true
+          description: "User's strengths based on AI analysis"
+        weaknesses:
+          type: string
+          nullable: true
+          description: "User's weaknesses based on AI analysis"
+        values:
+          type: string
+          nullable: true
+          description: "User's core values identified by AI"
+        improvementSuggestions:
+          type: string
+          nullable: true
+          description: "AI-generated suggestions for improvement"
+        relationshipMap:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string
+          description: "Map of specific people names to relationship descriptions"
+          example:
+            민지: "고민을 나누고 격려하는 친구"
+            부모님: "정신적으로 지지해주는 가족"
+            준호: "프로젝트에 대해 열정적으로 토론하는 동료"
+        analyzedAt:
+          type: string
+          description: "Timestamp when the analysis was performed"

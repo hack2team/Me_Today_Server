@@ -34,7 +34,8 @@ data class CreateUserRequest(
     val age: Int? = null,
     val email: String? = null,
     val password: String? = null,
-    val planDurationMonths: Int? = null
+    val planDurationMonths: Int? = null,
+    val idealPersonDescription: String? = null
 )
 
 // Interest DTOs
@@ -248,7 +249,7 @@ data class AIAnalysisDTO(
     val weaknesses: String? = null,
     val values: String? = null,
     val improvementSuggestions: String? = null,
-    val relationshipMap: String? = null,
+    val relationshipMap: Map<String, String>? = null,
     val analyzedAt: String
 )
 
