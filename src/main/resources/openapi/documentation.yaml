@@ -7,7 +7,7 @@ info:
     name: Me_Today_Server
 
 servers:
-  - url: http://192.168.15.153:8080
+  - url: http://192.168.15.110:8080
     description: Local development server
 
 tags:
@@ -150,6 +150,42 @@ paths:
                     type: boolean
                   data:
                     $ref: '#/components/schemas/TodayQuestionResponse'
+
+  /api/questions/{id}:
+    get:
+      tags:
+        - Questions
+      summary: Get question by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Question details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/QuestionDTO'
+        '404':
+          description: Question not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    $ref: '#/components/schemas/ErrorDetail'
 
   /api/answers:
     post:
