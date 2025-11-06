@@ -114,19 +114,7 @@ data class CreateAnswerRequest(
 data class CreateAnswerResponse(
     val answerId: Long,
     val prevAnswer: AnswerDTO? = null,
-    val savedAt: String,
-    val aiAnalysis: AiAnalysisResult? = null
-)
-
-@Serializable
-data class AiAnalysisResult(
-    val summary: String,
-    val keywords: List<String>,
-    val strengths: String,
-    val weaknesses: String,
-    val pathToIdeal: String,
-    val relationshipMap: Map<String, String>,
-    val comparison: String? = null
+    val savedAt: String
 )
 
 // Report DTOs
@@ -213,19 +201,6 @@ data class UpdateUserGoalRequest(
     val idealPersonDescription: String? = null
 )
 
-// AI Analysis DTOs
-@Serializable
-data class AiAnalysisDTO(
-    val analysisId: Long,
-    val userId: Long,
-    val answerId: Long,
-    val strengths: String? = null,
-    val weaknesses: String? = null,
-    val pathToIdeal: String? = null,
-    val relationshipMap: String? = null,
-    val analyzedAt: String
-)
-
 // Answer History DTOs
 @Serializable
 data class AnswerHistoryRequest(
@@ -236,13 +211,29 @@ data class AnswerHistoryRequest(
 
 @Serializable
 data class AnswerHistoryResponse(
-    val answers: List<AnswerWithAnalysis>
+    val answers: List<AnswerHistoryItem>
 )
 
 @Serializable
-data class AnswerWithAnalysis(
-    val answer: AnswerDTO,
-    val analysis: AiAnalysisDTO?
+data class AnswerHistoryItem(
+    val answerId: Long,
+    val questionId: Long,
+    val questionContent: String? = null,
+    val content: String,
+    val createdAt: String
+)
+
+@Serializable
+data class UserReportDTO(
+    val totalAnswers: Int,
+    val uniqueQuestions: Int,
+    val streak: Int,
+    val lastAnsweredAt: String?,
+    val topKeywords: List<String>,
+    val relationships: Map<String, String>,
+    val highlights: List<String>,
+    val opportunities: List<String>,
+    val recentAnswers: List<AnswerHistoryItem>
 )
 
 // Health Check

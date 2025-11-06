@@ -3,10 +3,8 @@ package com.selfjourney.routes
 import com.selfjourney.domain.*
 import com.selfjourney.repository.AnswerRepository
 import com.selfjourney.repository.ProgressRepository
-import com.selfjourney.repository.AiAnalysisRepository
-import com.selfjourney.repository.UserGoalRepository
+import com.selfjourney.repository.QuestionRepository
 import com.selfjourney.service.AnswerService
-import com.selfjourney.service.GeminiService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -15,14 +13,13 @@ import io.ktor.server.routing.*
 
 fun Route.answerRoutes() {
     val answerRepository = AnswerRepository()
+    val questionRepository = QuestionRepository()
     val progressRepository = ProgressRepository()
-    val aiAnalysisRepository = AiAnalysisRepository()
-    val userGoalRepository = UserGoalRepository()
-
-    val geminiApiKey = System.getenv("GEMINI_API_KEY") ?: "AIzaSyDFkhSf8TylOsBR2ZnYQDmwmmoJ1wbj5ec"
-    val geminiService = GeminiService(geminiApiKey)
-
-    val answerService = AnswerService(answerRepository, progressRepository, aiAnalysisRepository, userGoalRepository, geminiService)
+    val answerService = AnswerService(
+        answerRepository,
+        questionRepository,
+        progressRepository
+    )
 
     route("/api/answers") {
         get("/user/{userId}") {
@@ -65,7 +62,6 @@ fun Route.answerRoutes() {
             call.respond(HttpStatusCode.Created, ApiResponse(success = true, data = response))
         }
 
-        // Get answer history with AI analysis
         get("/history/{userId}") {
             val userId = call.parameters["userId"]?.toLongOrNull()
             val date = call.request.queryParameters["date"]
@@ -84,6 +80,58 @@ fun Route.answerRoutes() {
 
             val history = answerService.getAnswerHistory(userId, date, questionId)
             call.respond(ApiResponse(success = true, data = history))
+        }
+
+        get("/insights/{userId}") {
+            val userId = call.parameters["userId"]?.toLongOrNull()
+            if (userId == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Unit>(
+                        success = false,
+                        error = ErrorDetail("INVALID_ID", "Invalid user ID")
+                    )
+                )
+                return@get
+            }
+
+            val report = answerService.getUserReport(userId)
+            call.respond(ApiResponse(success = true, data = report))
+        }
+
+        get("/user/{userId}/question/{questionId}") {
+            val userId = call.parameters["userId"]?.toLongOrNull()
+            val questionId = call.parameters["questionId"]?.toLongOrNull()
+            if (userId == null || questionId == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Unit>(
+                        success = false,
+                        error = ErrorDetail("INVALID_ID", "Invalid user or question ID")
+                    )
+                )
+                return@get
+            }
+
+            val history = answerService.getQuestionHistory(userId, questionId)
+            call.respond(ApiResponse(success = true, data = history))
+        }
+
+        get("/report/{userId}") {
+            val userId = call.parameters["userId"]?.toLongOrNull()
+            if (userId == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Unit>(
+                        success = false,
+                        error = ErrorDetail("INVALID_ID", "Invalid user ID")
+                    )
+                )
+                return@get
+            }
+
+            val report = answerService.getUserReport(userId)
+            call.respond(ApiResponse(success = true, data = report))
         }
     }
 }

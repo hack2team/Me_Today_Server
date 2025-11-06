@@ -4,6 +4,7 @@ import com.selfjourney.domain.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import java.time.LocalDateTime
 
 class QuestionRepository {
@@ -27,6 +28,14 @@ class QuestionRepository {
         Questions.select { Questions.id eq sequence.toLong() }
             .mapNotNull { toDTO(it) }
             .singleOrNull()
+
+    fun findByIds(ids: Set<Long>): Map<Long, QuestionDTO> {
+        if (ids.isEmpty()) return emptyMap()
+        return Questions
+            .select { Questions.id inList ids.toList() }
+            .map { toDTO(it) }
+            .associateBy { it.questionId }
+    }
 
     fun create(request: CreateQuestionRequest): Long {
         val questionId = Questions.insertAndGetId {

@@ -9,7 +9,7 @@ Self Journey는 하루 한 질문을 통해 자신을 돌아보고, AI 분석을
 ### 주요 기능
 
 - ✅ **하루 질문/답변**: 매일 맞춤형 질문 제공 및 답변 기록
-- 🤖 **AI 분석**: Gemini AI를 통한 답변 분석 (요약, 키워드, 감정 분석)
+- 📊 **자동 리포트**: 누적 답변을 기반으로 한 자기 성찰 리포트 생성
 - 📊 **성장 리포트**: 장단점, 가치관, 관계도 등 종합 분석
 - 🎯 **관심사/페르소나**: 사용자 맞춤 질문 제공
 - 📈 **진행도 추적**: 연속 답변일, 자기인식 레벨 관리
@@ -22,7 +22,6 @@ Self Journey는 하루 한 질문을 통해 자신을 돌아보고, AI 분석을
 - **Database**: MySQL 8.0
 - **ORM**: Exposed
 - **Migration**: Flyway
-- **AI**: Google Gemini API
 - **Documentation**: OpenAPI 3.0 + Swagger UI
 - **Build**: Gradle Kotlin DSL
 - **Container**: Docker + Docker Compose
@@ -64,8 +63,6 @@ DB_NAME=self_journey
 DB_USER=appuser
 DB_PASS=apppass
 
-# Gemini AI API Key
-GEMINI_API_KEY=AIzaSyDFkhSf8TylOsBR2ZnYQDmwmmoJ1wbj5ec
 ```
 
 ### 3. 서비스 시작
@@ -145,20 +142,18 @@ docker compose down -v
 - `/api/questions/today` 응답에서 누적 답변 수와 남은 질문 수 확인
 - 연속 답변일 계산 및 레벨 업 시스템
 
-### 2. AI 답변 분석
+### 2. 자동 리포트 생성
 
-답변 제출 시 Gemini AI가 자동으로:
-- 답변 요약 생성
-- 키워드 추출
-- 감정 분석 (joy, sadness, anger, fear, neutral)
-- 과거 답변과의 비교 분석 (동일 질문의 이전 답변이 있는 경우)
+답변이 저장될 때마다 시스템이 전체 히스토리를 훑어보고 아래 정보를 갱신합니다:
+- 누적 답변 수와 고유 질문 수
+- 자주 언급된 키워드와 강조된 관계
+- 최근 답변 목록과 간단한 하이라이트/제안
+
+최신 리포트는 `GET /api/answers/report/{userId}` 또는 `GET /api/answers/insights/{userId}`로 확인할 수 있으며, `GET /api/answers/user/{userId}/question/{questionId}`에서 동일한 질문에 대한 과거 답변을 비교할 수 있습니다.
 
 ### 3. 과거 답변 비교
 
-같은 질문에 대한 답변 제출 시:
-- 이전 답변 자동 조회
-- AI를 통한 변화 분석
-- 성장/변화 추적
+동일한 질문에 대한 이전 답변은 응답 본문(`prevAnswer`)으로 반환되므로 사용자가 직접 변화를 비교할 수 있습니다.
 
 ## 🗄 데이터베이스 스키마
 
@@ -220,8 +215,7 @@ curl -X POST http://localhost:8080/api/answers \
   -d '{
     "userId": 1,
     "questionId": 1,
-    "content": "오늘은 새로운 기술을 배워서 뿌듯했습니다.",
-    "emotion": "joy"
+    "content": "오늘은 새로운 기술을 배워서 뿌듯했습니다."
   }'
 ```
 
@@ -232,18 +226,24 @@ curl -X POST http://localhost:8080/api/answers \
   "data": {
     "answerId": 1,
     "prevAnswer": null,
-    "savedAt": "2025-01-01T12:00:00",
-    "aiAnalysis": {
-      "summary": "새로운 기술 학습을 통한 성취감을 경험했습니다.",
-      "keywords": ["기술", "학습", "성취"],
-      "emotion": "joy",
-      "comparison": null
-    }
+    "savedAt": "2025-01-01T12:00:00"
   }
 }
 ```
 
-#### 4. 진행도 조회
+#### 4. 특정 질문 과거 답변 조회
+
+```bash
+curl http://localhost:8080/api/answers/user/1/question/1
+```
+
+#### 5. 누적 리포트 조회
+
+```bash
+curl http://localhost:8080/api/answers/report/1
+```
+
+#### 6. 진행도 조회
 
 ```bash
 curl http://localhost:8080/api/progress/1
@@ -337,10 +337,6 @@ docker compose exec mysql mysql -u appuser -p self_journey
    - JWT 인증 활성화 (현재 기본 틀만 구현됨)
    - Rate limiting 추가
    - HTTPS 사용 (리버스 프록시 설정)
-
-4. **AI API 키**
-   - Gemini API 키를 환경 변수로 관리
-   - API 사용량 모니터링 및 제한 설정
 
 ## 🐛 트러블슈팅
 

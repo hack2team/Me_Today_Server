@@ -7,10 +7,12 @@ import java.time.LocalDateTime
 
 class AnswerRepository {
 
-    fun findByUserId(userId: Long): List<AnswerDTO> =
-        Answers.select { Answers.userId eq userId }
-            .orderBy(Answers.createdAt to SortOrder.DESC)
+    fun findByUserId(userId: Long, ascending: Boolean = false): List<AnswerDTO> {
+        val order = if (ascending) Answers.createdAt to SortOrder.ASC else Answers.createdAt to SortOrder.DESC
+        return Answers.select { Answers.userId eq userId }
+            .orderBy(order)
             .map { toDTO(it) }
+    }
 
     fun findByQuestionId(questionId: Long): List<AnswerDTO> =
         Answers.select { Answers.questionId eq questionId }.map { toDTO(it) }
@@ -25,13 +27,18 @@ class AnswerRepository {
             .singleOrNull()
     }
 
-    fun create(request: CreateAnswerRequest, aiSummary: String? = null, aiKeywords: String? = null): Long {
+    fun findByUserAndQuestion(userId: Long, questionId: Long, ascending: Boolean = true): List<AnswerDTO> {
+        val order = if (ascending) SortOrder.ASC else SortOrder.DESC
+        return Answers.select { (Answers.userId eq userId) and (Answers.questionId eq questionId) }
+            .orderBy(Answers.createdAt to order)
+            .map { toDTO(it) }
+    }
+
+    fun create(request: CreateAnswerRequest): Long {
         val answerId = Answers.insertAndGetId {
             it[userId] = request.userId
             it[questionId] = request.questionId
             it[content] = request.content
-            it[Answers.aiSummary] = aiSummary
-            it[Answers.aiKeywords] = aiKeywords
             it[createdAt] = LocalDateTime.now()
             it[updatedAt] = LocalDateTime.now()
         }

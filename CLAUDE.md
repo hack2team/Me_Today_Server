@@ -4,14 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Self Journey (나를 기록하다) is a Kotlin/Ktor-based REST API for a daily self-reflection journaling service with AI-powered analysis. Users answer daily questions, and the Gemini AI provides insights including summaries, keywords, strengths, weaknesses, path to ideal self, and relationship mapping.
+Self Journey (나를 기록하다) is a Kotlin/Ktor-based REST API for a daily self-reflection journaling service. Users answer daily questions, and the server aggregates those answers to surface personal trends, highlights, and relationship cues.
 
 ## Tech Stack
 
 - **Framework**: Ktor 2.3.7 (Kotlin 1.9.22)
 - **Database**: MySQL 8.0 with Exposed ORM
 - **Migration**: Flyway
-- **AI**: Google Gemini API (direct HTTP calls, no SDK)
 - **Build**: Gradle 8.5 with Kotlin DSL
 - **Deployment**: Docker multi-stage builds with Docker Compose
 
@@ -63,9 +62,8 @@ The codebase follows a strict 4-layer architecture:
 ### Key Architectural Decisions
 
 **Suspend Functions and Transactions**:
-- Gemini AI calls are `suspend` functions and MUST be called outside `transaction {}` blocks
-- Pattern: Split transactions before/after AI calls to avoid "suspension inside transaction" errors
-- Example in `AnswerService.submitAnswer()`: Three separate transactions (fetch prev answer → AI analysis → save results)
+- Keep long-running work (e.g., keyword extraction, report building) outside `transaction {}` blocks.
+- `AnswerService.submitAnswer()` performs DB operations inside transactions and runs lightweight aggregation logic afterwards.
 
 **Repository Instantiation**:
 - Repositories are instantiated in route functions (not as singletons)
@@ -83,23 +81,11 @@ The codebase follows a strict 4-layer architecture:
 
 ## Critical Implementation Details
 
-### Gemini AI Integration
-- **No SDK used**: Direct HTTP POST to `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent`
-- API key passed as query parameter: `?key={GEMINI_API_KEY}`
-- Response parsing: Extract text from `candidates[0].content.parts[0].text` and parse as JSON
-- Error handling: Always provide fallback `AnalysisResult` on failure
-
-### AI Analysis Structure (Recent Update)
-The AI analysis now provides:
-- `summary`: Brief overview of the answer
-- `keywords`: List of extracted keywords
-- `strengths`: User's positive aspects (장점)
-- `weaknesses`: Areas for improvement (단점)
-- `pathToIdeal`: Guidance toward ideal self (내가 원하는 사람이 될려면)
-- `relationshipMap`: Map of mentioned people and their relationships (나의 관계도)
-- `comparison`: Change analysis if previous answer exists
-
-**Note**: `emotion` field has been REMOVED from the system.
+### Self-Reflection Report Pipeline
+- Every stored answer updates an internal report derived from the full answer history (no external AI calls).
+- The report highlights frequently used keywords, simple relationship cues, recent answers, and generic improvement suggestions.
+- `GET /api/answers/report/{userId}` (alias `/api/answers/insights/{userId}`) returns the latest snapshot.
+- `GET /api/answers/user/{userId}/question/{questionId}` lists the user's entire answer history for a specific question to support comparisons over time.
 
 ### Daily Question Flow (Recent Update)
 - 365-question catalog is seeded via `V5__reset_questions.sql`; IDs map directly to the day order.
@@ -109,7 +95,7 @@ The AI analysis now provides:
 ### User Goals System
 - Users can set diary periods with start/end dates and ideal person descriptions
 - `UserGoalRepository.findActiveGoalByUserId()` finds goals where today falls between start_date and end_date
-- The ideal person description is passed to Gemini AI for personalized analysis
+- The ideal person description can still be stored, but it is not currently used for automated reporting.
 - Accessed via `/api/user-goals` endpoints
 
 ### Database Schema Notes
@@ -120,7 +106,7 @@ The AI analysis now provides:
 
 **New Tables (V3 migration)**:
 - `user_goals`: Diary period and ideal person description
-- `ai_analysis`: Stores strengths, weaknesses, path_to_ideal, relationship_map per answer
+- `ai_analysis`: Historical insight snapshots (kept for backward compatibility; not actively written in the current workflow)
 
 **365 Questions**:
 - Originally seeded in V4; V5 resets the list to the latest fixed set and drops `difficulty_level`
@@ -198,7 +184,7 @@ curl -X POST http://localhost:8080/api/answers \
     "content": "오늘은 새로운 것을 배웠습니다."
   }'
 
-# 5. View answer history with AI analysis
+# 5. View answer history for a user
 curl http://localhost:8080/api/answers/history/1?date=2025-01-01
 ```
 
@@ -209,8 +195,6 @@ curl http://localhost:8080/api/answers/history/1?date=2025-01-01
 - **Ktor Version**: 2.3.7
 - **No Authentication**: JWT structure exists but not enforced (future work)
 - **CORS**: Fully open with `anyHost()` - restrict in production
-- **Gemini API Key**: Hardcoded default in routes - use env var `GEMINI_API_KEY` in production
-
 ## Troubleshooting Guide
 
 ### Build Failures
@@ -220,7 +204,7 @@ curl http://localhost:8080/api/answers/history/1?date=2025-01-01
 
 ### Runtime Issues
 - **Property not found**: Check environment variable precedence in `Database.kt`
-- **Suspension function errors**: Ensure AI calls are outside transaction blocks
+- **Long-running aggregation**: Keep heavy analysis outside `transaction {}` blocks
 - **Flyway checksum mismatch**: Development - `docker-compose down -v`; Production - use `flywayRepair`
 
 ### Database Issues
@@ -231,7 +215,7 @@ curl http://localhost:8080/api/answers/history/1?date=2025-01-01
 ## Recent Major Changes
 
 1. **Gender Removal**: `users.gender` field completely removed from system
-2. **Emotion Removal**: `answers.emotion` field removed, no longer used in AI analysis
+2. **Emotion Removal**: `answers.emotion` field removed from schema
 3. **Diary Feature**: Added user goals with ideal person description and 365 fixed questions
-4. **Enhanced AI Analysis**: Now includes strengths, weaknesses, pathToIdeal, and relationshipMap
+4. **User Report Endpoint**: Added `/api/answers/report/{userId}` for aggregated journaling insights
 5. **API Simplification**: All APIs use `/api/*` rather than versioned prefixes.

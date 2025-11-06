@@ -57,11 +57,6 @@ dependencies {
     // Environment variables
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 
-    // HTTP Client for Gemini API calls
-    implementation("io.ktor:ktor-client-core:$ktor_version")
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-
     // Testing
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

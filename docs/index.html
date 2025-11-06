@@ -689,26 +689,6 @@
   <script>
     // Script section to load models into a JS Var
     var defs = {}
-            defs["AiAnalysisResult"] = {
-  "type" : "object",
-  "properties" : {
-    "summary" : {
-      "type" : "string"
-    },
-    "keywords" : {
-      "type" : "array",
-      "items" : {
-        "type" : "string"
-      }
-    },
-    "emotion" : {
-      "type" : "string"
-    },
-    "comparison" : {
-      "type" : "string"
-    }
-  }
-};
             defs["AnswerDTO"] = {
   "type" : "object",
   "properties" : {
@@ -727,9 +707,6 @@
     "content" : {
       "type" : "string"
     },
-    "emotion" : {
-      "type" : "string"
-    },
     "aiSummary" : {
       "type" : "string"
     },
@@ -741,6 +718,39 @@
     },
     "updatedAt" : {
       "type" : "string"
+    }
+  }
+};
+            defs["AnswerHistoryItem"] = {
+  "type" : "object",
+  "properties" : {
+    "answerId" : {
+      "type" : "integer",
+      "format" : "int64"
+    },
+    "questionId" : {
+      "type" : "integer",
+      "format" : "int64"
+    },
+    "questionContent" : {
+      "type" : "string"
+    },
+    "content" : {
+      "type" : "string"
+    },
+    "createdAt" : {
+      "type" : "string"
+    }
+  }
+};
+            defs["AnswerHistoryResponse"] = {
+  "type" : "object",
+  "properties" : {
+    "answers" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/components/schemas/AnswerHistoryItem"
+      }
     }
   }
 };
@@ -758,10 +768,6 @@
     },
     "content" : {
       "type" : "string"
-    },
-    "emotion" : {
-      "type" : "string",
-      "enum" : [ "joy", "sadness", "anger", "fear", "neutral" ]
     }
   }
 };
@@ -777,9 +783,6 @@
     },
     "savedAt" : {
       "type" : "string"
-    },
-    "aiAnalysis" : {
-      "$ref" : "#/components/schemas/AiAnalysisResult"
     }
   }
 };
@@ -907,6 +910,53 @@
     }
   }
 };
+            defs["UserReportDTO"] = {
+  "type" : "object",
+  "properties" : {
+    "totalAnswers" : {
+      "type" : "integer"
+    },
+    "uniqueQuestions" : {
+      "type" : "integer"
+    },
+    "streak" : {
+      "type" : "integer"
+    },
+    "lastAnsweredAt" : {
+      "type" : "string"
+    },
+    "topKeywords" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "relationships" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    },
+    "highlights" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "opportunities" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "recentAnswers" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/components/schemas/AnswerHistoryItem"
+      }
+    }
+  }
+};
   </script>
 
   <div class="container-fluid">
@@ -924,11 +974,23 @@
             <li class="nav-fixed nav-header active" data-group="_"><a href="#api-_">API Summary</a></li>
 
                   <li class="nav-header" data-group="Answers"><a href="#api-Answers">API Methods - Answers</a></li>
+                    <li data-group="Answers" data-name="apiAnswersHistoryUserIdGet" class="">
+                      <a href="#api-Answers-apiAnswersHistoryUserIdGet">apiAnswersHistoryUserIdGet</a>
+                    </li>
+                    <li data-group="Answers" data-name="apiAnswersInsightsUserIdGet" class="">
+                      <a href="#api-Answers-apiAnswersInsightsUserIdGet">apiAnswersInsightsUserIdGet</a>
+                    </li>
                     <li data-group="Answers" data-name="apiAnswersPost" class="">
                       <a href="#api-Answers-apiAnswersPost">apiAnswersPost</a>
                     </li>
+                    <li data-group="Answers" data-name="apiAnswersReportUserIdGet" class="">
+                      <a href="#api-Answers-apiAnswersReportUserIdGet">apiAnswersReportUserIdGet</a>
+                    </li>
                     <li data-group="Answers" data-name="apiAnswersUserUserIdGet" class="">
                       <a href="#api-Answers-apiAnswersUserUserIdGet">apiAnswersUserUserIdGet</a>
+                    </li>
+                    <li data-group="Answers" data-name="apiAnswersUserUserIdQuestionQuestionIdGet" class="">
+                      <a href="#api-Answers-apiAnswersUserUserIdQuestionQuestionIdGet">apiAnswersUserUserIdQuestionQuestionIdGet</a>
                     </li>
                   <li class="nav-header" data-group="Health"><a href="#api-Health">API Methods - Health</a></li>
                     <li data-group="Health" data-name="healthGet" class="">
@@ -976,11 +1038,682 @@
         <div id="sections">
                 <section id="api-Answers">
                   <h1>Answers</h1>
+                    <div id="api-Answers-apiAnswersHistoryUserIdGet">
+                      <article id="api-Answers-apiAnswersHistoryUserIdGet-0" data-group="User" data-name="apiAnswersHistoryUserIdGet" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiAnswersHistoryUserIdGet</h1>
+                          <p>Get answer history (optionally filtered)</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/answers/history/{userId}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersHistoryUserIdGet-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Answers-apiAnswersHistoryUserIdGet-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X GET\
+-H "Accept: application/json"\
+"http://localhost:8080/api/answers/history/{userId}?date=&questionId="</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.AnswersApi;
+
+import java.io.File;
+import java.util.*;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        String date = date_example; // String | 
+        Long questionId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersHistoryUserIdGet(userId, date, questionId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersHistoryUserIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.AnswersApi;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        String date = date_example; // String | 
+        Long questionId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersHistoryUserIdGet(userId, date, questionId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersHistoryUserIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Long *userId = 789; // 
+String *date = date_example; //  (optional)
+Long *questionId = 789; //  (optional)
+
+AnswersApi *apiInstance = [[AnswersApi alloc] init];
+
+// Get answer history (optionally filtered)
+[apiInstance apiAnswersHistoryUserIdGetWith:userId
+    date:date
+    questionId:questionId
+              completionHandler: ^(Object output, NSError* error) {
+                            if (output) {
+                                NSLog(@"%@", output);
+                            }
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SelfJourneyApi = require('self_journey_api');
+
+var api = new SelfJourneyApi.AnswersApi()
+var userId = 789; // {{Long}} 
+var opts = { 
+  'date': date_example, // {{String}} 
+  'questionId': 789 // {{Long}} 
+};
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiAnswersHistoryUserIdGet(userId, opts, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class apiAnswersHistoryUserIdGetExample
+    {
+        public void main()
+        {
+
+            var apiInstance = new AnswersApi();
+            var userId = 789;  // Long | 
+            var date = date_example;  // String |  (optional) 
+            var questionId = 789;  // Long |  (optional) 
+
+            try
+            {
+                // Get answer history (optionally filtered)
+                Object result = apiInstance.apiAnswersHistoryUserIdGet(userId, date, questionId);
+                Debug.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling AnswersApi.apiAnswersHistoryUserIdGet: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\ApiAnswersApi();
+$userId = 789; // Long | 
+$date = date_example; // String | 
+$questionId = 789; // Long | 
+
+try {
+    $result = $api_instance->apiAnswersHistoryUserIdGet($userId, $date, $questionId);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AnswersApi->apiAnswersHistoryUserIdGet: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::AnswersApi;
+
+my $api_instance = WWW::SwaggerClient::AnswersApi->new();
+my $userId = 789; # Long | 
+my $date = date_example; # String | 
+my $questionId = 789; # Long | 
+
+eval { 
+    my $result = $api_instance->apiAnswersHistoryUserIdGet(userId => $userId, date => $date, questionId => $questionId);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling AnswersApi->apiAnswersHistoryUserIdGet: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersHistoryUserIdGet-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.AnswersApi()
+userId = 789 # Long | 
+date = date_example # String |  (optional)
+questionId = 789 # Long |  (optional)
+
+try: 
+    # Get answer history (optionally filtered)
+    api_response = api_instance.api_answers_history_user_id_get(userId, date=date, questionId=questionId)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling AnswersApi->apiAnswersHistoryUserIdGet: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">userId*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiAnswersHistoryUserIdGet_userId">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      Long
+                                                  </span>
+                                                      <span class="format">
+                                                          (int64)
+                                                      </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
+
+
+
+
+                            <div class="methodsubtabletitle">Query parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">date</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_apiAnswersHistoryUserIdGet_date">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    String
+                                                </span>
+                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                                <tr><td style="width:150px;">questionId</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_apiAnswersHistoryUserIdGet_questionId">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    Long
+                                                </span>
+                                                    <span class="format">
+                                                        (int64)
+                                                    </span>
+                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                            </table>
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 - Answer history for the user </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiAnswersHistoryUserIdGet-200-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiAnswersHistoryUserIdGet-200-schema">
+                                  <div id='responses-apiAnswersHistoryUserIdGet-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Answer history for the user",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AnswerHistoryResponse"
+          }
+        },
+        "x-content-type" : "application/json"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiAnswersHistoryUserIdGet-200-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiAnswersHistoryUserIdGet-200-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiAnswersHistoryUserIdGet-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Answers-apiAnswersInsightsUserIdGet">
+                      <article id="api-Answers-apiAnswersInsightsUserIdGet-0" data-group="User" data-name="apiAnswersInsightsUserIdGet" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiAnswersInsightsUserIdGet</h1>
+                          <p>Get aggregated self-reflection report for a user</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/answers/insights/{userId}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersInsightsUserIdGet-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Answers-apiAnswersInsightsUserIdGet-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X GET\
+-H "Accept: application/json"\
+"http://localhost:8080/api/answers/insights/{userId}"</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.AnswersApi;
+
+import java.io.File;
+import java.util.*;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersInsightsUserIdGet(userId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersInsightsUserIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.AnswersApi;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersInsightsUserIdGet(userId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersInsightsUserIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Long *userId = 789; // 
+
+AnswersApi *apiInstance = [[AnswersApi alloc] init];
+
+// Get aggregated self-reflection report for a user
+[apiInstance apiAnswersInsightsUserIdGetWith:userId
+              completionHandler: ^(Object output, NSError* error) {
+                            if (output) {
+                                NSLog(@"%@", output);
+                            }
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SelfJourneyApi = require('self_journey_api');
+
+var api = new SelfJourneyApi.AnswersApi()
+var userId = 789; // {{Long}} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiAnswersInsightsUserIdGet(userId, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class apiAnswersInsightsUserIdGetExample
+    {
+        public void main()
+        {
+
+            var apiInstance = new AnswersApi();
+            var userId = 789;  // Long | 
+
+            try
+            {
+                // Get aggregated self-reflection report for a user
+                Object result = apiInstance.apiAnswersInsightsUserIdGet(userId);
+                Debug.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling AnswersApi.apiAnswersInsightsUserIdGet: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\ApiAnswersApi();
+$userId = 789; // Long | 
+
+try {
+    $result = $api_instance->apiAnswersInsightsUserIdGet($userId);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AnswersApi->apiAnswersInsightsUserIdGet: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::AnswersApi;
+
+my $api_instance = WWW::SwaggerClient::AnswersApi->new();
+my $userId = 789; # Long | 
+
+eval { 
+    my $result = $api_instance->apiAnswersInsightsUserIdGet(userId => $userId);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling AnswersApi->apiAnswersInsightsUserIdGet: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersInsightsUserIdGet-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.AnswersApi()
+userId = 789 # Long | 
+
+try: 
+    # Get aggregated self-reflection report for a user
+    api_response = api_instance.api_answers_insights_user_id_get(userId)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling AnswersApi->apiAnswersInsightsUserIdGet: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">userId*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiAnswersInsightsUserIdGet_userId">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      Long
+                                                  </span>
+                                                      <span class="format">
+                                                          (int64)
+                                                      </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 - Aggregated report based on all answers </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiAnswersInsightsUserIdGet-200-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiAnswersInsightsUserIdGet-200-schema">
+                                  <div id='responses-apiAnswersInsightsUserIdGet-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Aggregated report based on all answers",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/UserReportDTO"
+          }
+        },
+        "x-content-type" : "application/json"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiAnswersInsightsUserIdGet-200-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiAnswersInsightsUserIdGet-200-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiAnswersInsightsUserIdGet-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                        </article>
+                      </div>
+                      <hr>
                     <div id="api-Answers-apiAnswersPost">
                       <article id="api-Answers-apiAnswersPost-0" data-group="User" data-name="apiAnswersPost" data-version="0">
                         <div class="pull-left">
                           <h1>apiAnswersPost</h1>
-                          <p>Submit answer with AI analysis</p>
+                          <p>Submit answer</p>
                         </div>
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
@@ -1030,8 +1763,7 @@ public class AnswersApiExample {
         CreateAnswerRequest body = {
   "userId" : 1,
   "questionId" : 123,
-  "content" : "오늘의 나는 행복했다",
-  "emotion" : "joy"
+  "content" : "오늘의 나는 행복했다"
 }; // CreateAnswerRequest | 
         try {
             Object result = apiInstance.apiAnswersPost(body);
@@ -1054,8 +1786,7 @@ public class AnswersApiExample {
         CreateAnswerRequest body = {
   "userId" : 1,
   "questionId" : 123,
-  "content" : "오늘의 나는 행복했다",
-  "emotion" : "joy"
+  "content" : "오늘의 나는 행복했다"
 }; // CreateAnswerRequest | 
         try {
             Object result = apiInstance.apiAnswersPost(body);
@@ -1075,13 +1806,12 @@ public class AnswersApiExample {
                               <pre class="prettyprint"><code class="language-cpp">CreateAnswerRequest *body = {
   "userId" : 1,
   "questionId" : 123,
-  "content" : "오늘의 나는 행복했다",
-  "emotion" : "joy"
+  "content" : "오늘의 나는 행복했다"
 }; // 
 
 AnswersApi *apiInstance = [[AnswersApi alloc] init];
 
-// Submit answer with AI analysis
+// Submit answer
 [apiInstance apiAnswersPostWith:body
               completionHandler: ^(Object output, NSError* error) {
                             if (output) {
@@ -1101,8 +1831,7 @@ var api = new SelfJourneyApi.AnswersApi()
 var body = {
   "userId" : 1,
   "questionId" : 123,
-  "content" : "오늘의 나는 행복했다",
-  "emotion" : "joy"
+  "content" : "오늘의 나는 행복했다"
 }; // {{CreateAnswerRequest}} 
 
 var callback = function(error, data, response) {
@@ -1138,7 +1867,7 @@ namespace Example
 
             try
             {
-                // Submit answer with AI analysis
+                // Submit answer
                 Object result = apiInstance.apiAnswersPost(body);
                 Debug.WriteLine(result);
             }
@@ -1160,8 +1889,7 @@ $api_instance = new Swagger\Client\ApiAnswersApi();
 $body = {
   "userId" : 1,
   "questionId" : 123,
-  "content" : "오늘의 나는 행복했다",
-  "emotion" : "joy"
+  "content" : "오늘의 나는 행복했다"
 }; // CreateAnswerRequest | 
 
 try {
@@ -1202,12 +1930,11 @@ api_instance = swagger_client.AnswersApi()
 body = {
   "userId" : 1,
   "questionId" : 123,
-  "content" : "오늘의 나는 행복했다",
-  "emotion" : "joy"
+  "content" : "오늘의 나는 행복했다"
 } # CreateAnswerRequest | 
 
 try: 
-    # Submit answer with AI analysis
+    # Submit answer
     api_response = api_instance.api_answers_post(body)
     pprint(api_response)
 except ApiException as e:
@@ -1240,8 +1967,7 @@ except ApiException as e:
       "example" : {
         "userId" : 1,
         "questionId" : 123,
-        "content" : "오늘의 나는 행복했다",
-        "emotion" : "joy"
+        "content" : "오늘의 나는 행복했다"
       }
     }
   },
@@ -1272,7 +1998,7 @@ except ApiException as e:
 
 
                           <h2>Responses</h2>
-                            <h3> Status: 201 - Answer submitted with AI analysis </h3>
+                            <h3> Status: 201 - Answer stored successfully </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -1287,7 +2013,7 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Answer submitted with AI analysis",
+  "description" : "Answer stored successfully",
   "content" : {
     "application/json" : {
       "schema" : {
@@ -1307,12 +2033,7 @@ except ApiException as e:
         "data" : {
           "answerId" : 1,
           "prevAnswer" : null,
-          "savedAt" : "2025-01-01T12:00:00",
-          "aiAnalysis" : {
-            "summary" : "긍정적인 하루를 보냈습니다",
-            "keywords" : [ "행복", "긍정" ],
-            "emotion" : "joy"
-          }
+          "savedAt" : "2025-01-01T12:00:00"
         }
       }
     }
@@ -1339,6 +2060,311 @@ except ApiException as e:
                                     </script>
                                   </div>
                                   <input id='responses-apiAnswersPost-201-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Answers-apiAnswersReportUserIdGet">
+                      <article id="api-Answers-apiAnswersReportUserIdGet-0" data-group="User" data-name="apiAnswersReportUserIdGet" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiAnswersReportUserIdGet</h1>
+                          <p>Get aggregated self-reflection report for a user</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/answers/report/{userId}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Answers-apiAnswersReportUserIdGet-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersReportUserIdGet-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Answers-apiAnswersReportUserIdGet-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X GET\
+-H "Accept: application/json"\
+"http://localhost:8080/api/answers/report/{userId}"</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.AnswersApi;
+
+import java.io.File;
+import java.util.*;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersReportUserIdGet(userId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersReportUserIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.AnswersApi;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersReportUserIdGet(userId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersReportUserIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Long *userId = 789; // 
+
+AnswersApi *apiInstance = [[AnswersApi alloc] init];
+
+// Get aggregated self-reflection report for a user
+[apiInstance apiAnswersReportUserIdGetWith:userId
+              completionHandler: ^(Object output, NSError* error) {
+                            if (output) {
+                                NSLog(@"%@", output);
+                            }
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SelfJourneyApi = require('self_journey_api');
+
+var api = new SelfJourneyApi.AnswersApi()
+var userId = 789; // {{Long}} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiAnswersReportUserIdGet(userId, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class apiAnswersReportUserIdGetExample
+    {
+        public void main()
+        {
+
+            var apiInstance = new AnswersApi();
+            var userId = 789;  // Long | 
+
+            try
+            {
+                // Get aggregated self-reflection report for a user
+                Object result = apiInstance.apiAnswersReportUserIdGet(userId);
+                Debug.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling AnswersApi.apiAnswersReportUserIdGet: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\ApiAnswersApi();
+$userId = 789; // Long | 
+
+try {
+    $result = $api_instance->apiAnswersReportUserIdGet($userId);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AnswersApi->apiAnswersReportUserIdGet: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::AnswersApi;
+
+my $api_instance = WWW::SwaggerClient::AnswersApi->new();
+my $userId = 789; # Long | 
+
+eval { 
+    my $result = $api_instance->apiAnswersReportUserIdGet(userId => $userId);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling AnswersApi->apiAnswersReportUserIdGet: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersReportUserIdGet-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.AnswersApi()
+userId = 789 # Long | 
+
+try: 
+    # Get aggregated self-reflection report for a user
+    api_response = api_instance.api_answers_report_user_id_get(userId)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling AnswersApi->apiAnswersReportUserIdGet: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">userId*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiAnswersReportUserIdGet_userId">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      Long
+                                                  </span>
+                                                      <span class="format">
+                                                          (int64)
+                                                      </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 - Aggregated report based on all answers </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiAnswersReportUserIdGet-200-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiAnswersReportUserIdGet-200-schema">
+                                  <div id='responses-apiAnswersReportUserIdGet-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Aggregated report based on all answers",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/UserReportDTO"
+          }
+        },
+        "x-content-type" : "application/json"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiAnswersReportUserIdGet-200-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiAnswersReportUserIdGet-200-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiAnswersReportUserIdGet-200-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
 
@@ -1647,6 +2673,342 @@ except ApiException as e:
                                     </script>
                                   </div>
                                   <input id='responses-apiAnswersUserUserIdGet-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Answers-apiAnswersUserUserIdQuestionQuestionIdGet">
+                      <article id="api-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0" data-group="User" data-name="apiAnswersUserUserIdQuestionQuestionIdGet" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiAnswersUserUserIdQuestionQuestionIdGet</h1>
+                          <p>Get history for a specific question</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/answers/user/{userId}/question/{questionId}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X GET\
+-H "Accept: application/json"\
+"http://localhost:8080/api/answers/user/{userId}/question/{questionId}"</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.AnswersApi;
+
+import java.io.File;
+import java.util.*;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        Long questionId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersUserUserIdQuestionQuestionIdGet(userId, questionId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersUserUserIdQuestionQuestionIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.AnswersApi;
+
+public class AnswersApiExample {
+
+    public static void main(String[] args) {
+        AnswersApi apiInstance = new AnswersApi();
+        Long userId = 789; // Long | 
+        Long questionId = 789; // Long | 
+        try {
+            Object result = apiInstance.apiAnswersUserUserIdQuestionQuestionIdGet(userId, questionId);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling AnswersApi#apiAnswersUserUserIdQuestionQuestionIdGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Long *userId = 789; // 
+Long *questionId = 789; // 
+
+AnswersApi *apiInstance = [[AnswersApi alloc] init];
+
+// Get history for a specific question
+[apiInstance apiAnswersUserUserIdQuestionQuestionIdGetWith:userId
+    questionId:questionId
+              completionHandler: ^(Object output, NSError* error) {
+                            if (output) {
+                                NSLog(@"%@", output);
+                            }
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SelfJourneyApi = require('self_journey_api');
+
+var api = new SelfJourneyApi.AnswersApi()
+var userId = 789; // {{Long}} 
+var questionId = 789; // {{Long}} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiAnswersUserUserIdQuestionQuestionIdGet(userId, questionId, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class apiAnswersUserUserIdQuestionQuestionIdGetExample
+    {
+        public void main()
+        {
+
+            var apiInstance = new AnswersApi();
+            var userId = 789;  // Long | 
+            var questionId = 789;  // Long | 
+
+            try
+            {
+                // Get history for a specific question
+                Object result = apiInstance.apiAnswersUserUserIdQuestionQuestionIdGet(userId, questionId);
+                Debug.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling AnswersApi.apiAnswersUserUserIdQuestionQuestionIdGet: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\ApiAnswersApi();
+$userId = 789; // Long | 
+$questionId = 789; // Long | 
+
+try {
+    $result = $api_instance->apiAnswersUserUserIdQuestionQuestionIdGet($userId, $questionId);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling AnswersApi->apiAnswersUserUserIdQuestionQuestionIdGet: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::AnswersApi;
+
+my $api_instance = WWW::SwaggerClient::AnswersApi->new();
+my $userId = 789; # Long | 
+my $questionId = 789; # Long | 
+
+eval { 
+    my $result = $api_instance->apiAnswersUserUserIdQuestionQuestionIdGet(userId => $userId, questionId => $questionId);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling AnswersApi->apiAnswersUserUserIdQuestionQuestionIdGet: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Answers-apiAnswersUserUserIdQuestionQuestionIdGet-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.AnswersApi()
+userId = 789 # Long | 
+questionId = 789 # Long | 
+
+try: 
+    # Get history for a specific question
+    api_response = api_instance.api_answers_user_user_id_question_question_id_get(userId, questionId)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling AnswersApi->apiAnswersUserUserIdQuestionQuestionIdGet: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">userId*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiAnswersUserUserIdQuestionQuestionIdGet_userId">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      Long
+                                                  </span>
+                                                      <span class="format">
+                                                          (int64)
+                                                      </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                                  <tr><td style="width:150px;">questionId*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiAnswersUserUserIdQuestionQuestionIdGet_questionId">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      Long
+                                                  </span>
+                                                      <span class="format">
+                                                          (int64)
+                                                      </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
+
+
+
+
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 - All answers the user has given to the question </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiAnswersUserUserIdQuestionQuestionIdGet-200-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiAnswersUserUserIdQuestionQuestionIdGet-200-schema">
+                                  <div id='responses-apiAnswersUserUserIdQuestionQuestionIdGet-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "All answers the user has given to the question",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AnswerHistoryResponse"
+          }
+        },
+        "x-content-type" : "application/json"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiAnswersUserUserIdQuestionQuestionIdGet-200-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiAnswersUserUserIdQuestionQuestionIdGet-200-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiAnswersUserUserIdQuestionQuestionIdGet-200-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
 

@@ -156,7 +156,7 @@ paths:
     post:
       tags:
         - Answers
-      summary: Submit answer with AI analysis
+      summary: Submit answer
       requestBody:
         required: true
         content:
@@ -167,10 +167,9 @@ paths:
               userId: 1
               questionId: 123
               content: "오늘의 나는 행복했다"
-              emotion: "joy"
       responses:
         '201':
-          description: Answer submitted with AI analysis
+          description: Answer stored successfully
           content:
             application/json:
               schema:
@@ -186,10 +185,6 @@ paths:
                   answerId: 1
                   prevAnswer: null
                   savedAt: "2025-01-01T12:00:00"
-                  aiAnalysis:
-                    summary: "긍정적인 하루를 보냈습니다"
-                    keywords: ["행복", "긍정"]
-                    emotion: "joy"
 
   /api/answers/user/{userId}:
     get:
@@ -217,6 +212,124 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/AnswerDTO'
+
+  /api/answers/history/{userId}:
+    get:
+      tags:
+        - Answers
+      summary: Get answer history (optionally filtered)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Filter answers by YYYY-MM-DD prefix
+        - name: questionId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Answer history for the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AnswerHistoryResponse'
+
+  /api/answers/insights/{userId}:
+    get:
+      tags:
+        - Answers
+      summary: Get aggregated self-reflection report for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Aggregated report based on all answers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/UserReportDTO'
+
+  /api/answers/user/{userId}/question/{questionId}:
+    get:
+      tags:
+        - Answers
+      summary: Get history for a specific question
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: All answers the user has given to the question
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AnswerHistoryResponse'
+
+  /api/answers/report/{userId}:
+    get:
+      tags:
+        - Answers
+      summary: Get aggregated self-reflection report for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Aggregated report based on all answers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/UserReportDTO'
 
   /api/progress/{userId}:
     get:
@@ -333,10 +446,6 @@ components:
           format: int64
         content:
           type: string
-        emotion:
-          type: string
-          enum: [joy, sadness, anger, fear, neutral]
-
     CreateAnswerResponse:
       type: object
       properties:
@@ -347,8 +456,6 @@ components:
           $ref: '#/components/schemas/AnswerDTO'
         savedAt:
           type: string
-        aiAnalysis:
-          $ref: '#/components/schemas/AiAnalysisResult'
 
     AnswerDTO:
       type: object
@@ -364,8 +471,6 @@ components:
           format: int64
         content:
           type: string
-        emotion:
-          type: string
         aiSummary:
           type: string
         aiKeywords:
@@ -375,19 +480,61 @@ components:
         updatedAt:
           type: string
 
-    AiAnalysisResult:
+    AnswerHistoryItem:
       type: object
       properties:
-        summary:
+        answerId:
+          type: integer
+          format: int64
+        questionId:
+          type: integer
+          format: int64
+        questionContent:
           type: string
-        keywords:
+        content:
+          type: string
+        createdAt:
+          type: string
+
+    AnswerHistoryResponse:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerHistoryItem'
+
+    UserReportDTO:
+      type: object
+      properties:
+        totalAnswers:
+          type: integer
+        uniqueQuestions:
+          type: integer
+        streak:
+          type: integer
+        lastAnsweredAt:
+          type: string
+        topKeywords:
           type: array
           items:
             type: string
-        emotion:
-          type: string
-        comparison:
-          type: string
+        relationships:
+          type: object
+          additionalProperties:
+            type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        opportunities:
+          type: array
+          items:
+            type: string
+        recentAnswers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerHistoryItem'
 
     ProgressDTO:
       type: object
