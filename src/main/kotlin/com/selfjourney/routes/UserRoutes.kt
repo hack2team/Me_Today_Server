@@ -14,7 +14,7 @@ import java.time.LocalDate
 fun Route.userRoutes() {
     val userRepository = UserRepository()
     val userGoalRepository = UserGoalRepository()
-    val allowedDurations = setOf(6, 12, 24)
+    val allowedDurations = setOf(2,6, 12, 24,36)
 
     route("/api/users") {
         get {
