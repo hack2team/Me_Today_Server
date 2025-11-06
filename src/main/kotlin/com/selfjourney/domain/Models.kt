@@ -13,6 +13,7 @@ object Users : LongIdTable("users", "user_id") {
     val age = integer("age").nullable()
     val email = varchar("email", 100).uniqueIndex().nullable()
     val passwordHash = varchar("password_hash", 255).nullable()
+    val questionCycleMonths = integer("question_cycle_months").default(12)
     val createdAt = datetime("created_at").clientDefault { LocalDateTime.now() }
     val updatedAt = datetime("updated_at").clientDefault { LocalDateTime.now() }
 }
@@ -91,7 +92,8 @@ object AiAnalysis : LongIdTable("ai_analysis", "analysis_id") {
     val answerId = reference("answer_id", Answers)
     val strengths = text("strengths").nullable()
     val weaknesses = text("weaknesses").nullable()
-    val pathToIdeal = text("path_to_ideal").nullable()
+    val values = text("values").nullable()
+    val improvementSuggestions = text("improvement_suggestions").nullable()
     val relationshipMap = text("relationship_map").nullable() // JSON
     val analyzedAt = datetime("analyzed_at").clientDefault { LocalDateTime.now() }
 }

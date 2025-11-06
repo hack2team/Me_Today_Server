@@ -796,15 +796,17 @@
     "age" : {
       "type" : "integer"
     },
-    "gender" : {
-      "type" : "string",
-      "enum" : [ "male", "female", "other" ]
-    },
     "email" : {
       "type" : "string"
     },
     "password" : {
-      "type" : "string"
+      "type" : "string",
+      "nullable" : true
+    },
+    "planDurationMonths" : {
+      "type" : "integer",
+      "description" : "Allowed values: 6, 12, 24 (default 12)",
+      "nullable" : true
     }
   }
 };
@@ -896,23 +898,28 @@
       "type" : "string"
     },
     "age" : {
-      "type" : "integer"
-    },
-    "gender" : {
-      "type" : "string",
-      "enum" : [ "male", "female", "other" ]
+      "type" : "integer",
+      "nullable" : true
     },
     "email" : {
-      "type" : "string"
+      "type" : "string",
+      "nullable" : true
     },
     "createdAt" : {
       "type" : "string"
+    },
+    "planDurationMonths" : {
+      "type" : "integer",
+      "description" : "Question cycle in months"
     }
   }
 };
             defs["UserReportDTO"] = {
   "type" : "object",
   "properties" : {
+    "planDurationMonths" : {
+      "type" : "integer"
+    },
     "totalAnswers" : {
       "type" : "integer"
     },

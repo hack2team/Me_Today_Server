@@ -18,11 +18,13 @@ class UserRepository {
         .singleOrNull()
 
     fun create(request: CreateUserRequest): Long {
+        val planMonths = (request.planDurationMonths ?: 12).coerceAtLeast(1)
         val userId = Users.insertAndGetId {
             it[name] = request.name
             it[age] = request.age
             it[email] = request.email
             it[passwordHash] = request.password?.let { pwd -> hashPassword(pwd) }
+            it[questionCycleMonths] = planMonths
             it[createdAt] = LocalDateTime.now()
             it[updatedAt] = LocalDateTime.now()
         }
@@ -43,6 +45,9 @@ class UserRepository {
             it[name] = request.name
             request.age?.let { age -> it[Users.age] = age }
             request.email?.let { email -> it[Users.email] = email }
+            request.planDurationMonths?.let { months ->
+                it[Users.questionCycleMonths] = months.coerceAtLeast(1)
+            }
             it[updatedAt] = LocalDateTime.now()
         }
         return updated > 0
@@ -58,11 +63,18 @@ class UserRepository {
         name = row[Users.name],
         age = row[Users.age],
         email = row[Users.email],
-        createdAt = row[Users.createdAt].toString()
+        createdAt = row[Users.createdAt].toString(),
+        planDurationMonths = row[Users.questionCycleMonths]
     )
 
     private fun hashPassword(password: String): String {
         // In production, use BCrypt or similar
         return "\$2a\$10\$${password}DummyHash"
     }
+
+    fun getQuestionCycleMonths(userId: Long): Int =
+        Users.slice(Users.questionCycleMonths)
+            .select { Users.id eq userId }
+            .map { it[Users.questionCycleMonths] }
+            .singleOrNull() ?: 12
 }

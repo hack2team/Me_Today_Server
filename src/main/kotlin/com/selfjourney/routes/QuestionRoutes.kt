@@ -3,6 +3,7 @@ package com.selfjourney.routes
 import com.selfjourney.domain.*
 import com.selfjourney.repository.AnswerRepository
 import com.selfjourney.repository.QuestionRepository
+import com.selfjourney.repository.UserRepository
 import com.selfjourney.service.QuestionService
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -13,7 +14,8 @@ import io.ktor.server.routing.*
 fun Route.questionRoutes() {
     val questionRepository = QuestionRepository()
     val answerRepository = AnswerRepository()
-    val questionService = QuestionService(questionRepository, answerRepository)
+    val userRepository = UserRepository()
+    val questionService = QuestionService(questionRepository, answerRepository, userRepository)
 
     route("/api/questions") {
         get {

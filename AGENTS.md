@@ -17,3 +17,5 @@ The current Git history is empty, so establish clear messages using the imperati
 
 ## Environment & Configuration
 Duplicate `.env.example` to `.env` for local runs, but never commit personal secrets. When adding configuration, document the variable in both files and update `src/main/resources/application.conf` if defaults change. Verify Docker workflows after modifying Flyway migrations or database credentials, since `docker compose up -d --build` applies them automatically.
+
+Users select a journaling cycle (`planDurationMonths`) during creation (currently 6, 12, or 24 months). Question rotation and aggregated reports depend on this value; ensure any changes to the allowed set propagate through DTO validation, repositories, and migrations.

@@ -116,11 +116,12 @@ The codebase follows a strict 4-layer architecture:
 - Files: `src/main/resources/db/migration/V{N}__{description}.sql`
 - Executed automatically on application startup
 - Current migrations:
-  - V1: Initial schema
-  - V2: Seed data
-  - V3: Remove gender, add user_goals and ai_analysis tables
+- V1: Initial schema
+- V2: Seed data
+- V3: Remove gender, add user_goals and ai_analysis tables
 - V4: Seed initial 365 questions
 - V5: Drop `difficulty_level` column, reset question catalog, zero out progress
+- V6: Add `question_cycle_months` column to `users`
 
 ## Common Patterns
 
@@ -218,4 +219,9 @@ curl http://localhost:8080/api/answers/history/1?date=2025-01-01
 2. **Emotion Removal**: `answers.emotion` field removed from schema
 3. **Diary Feature**: Added user goals with ideal person description and 365 fixed questions
 4. **User Report Endpoint**: Added `/api/answers/report/{userId}` for aggregated journaling insights
-5. **API Simplification**: All APIs use `/api/*` rather than versioned prefixes.
+5. **API Simplification**: All APIs use `/api/*` rather than versioned prefixes
+6. **AI-Powered Analysis**: Integrated Gemini AI for automatic user report generation
+   - Analyzes user answers in real-time on each submission
+   - Generates 4-part analysis: strengths/weaknesses, values, improvement suggestions, relationship map
+   - Results stored in `ai_analysis` table and returned via `/api/answers/report/{userId}`
+   - Requires `GEMINI_API_KEY` environment variable

@@ -4,13 +4,18 @@
 
 ## 🎯 프로젝트 개요
 
-Self Journey는 하루 한 질문을 통해 자신을 돌아보고, AI 분석을 통해 자기 이해를 높이는 서비스입니다.
+Self Journey는 하루 한 질문을 통해 자신을 돌아보고, 누적 답변으로 개인 리포트를 쌓아가는 자기 성찰 서비스입니다.
 
 ### 주요 기능
 
 - ✅ **하루 질문/답변**: 매일 맞춤형 질문 제공 및 답변 기록
-- 📊 **자동 리포트**: 누적 답변을 기반으로 한 자기 성찰 리포트 생성
-- 📊 **성장 리포트**: 장단점, 가치관, 관계도 등 종합 분석
+- 🤖 **AI 자동 분석**: Gemini AI가 답변 제출 시 자동으로 4가지 항목 분석
+  - 장단점 (strengths/weaknesses)
+  - 가치관 (values)
+  - 개선사항 (improvement suggestions)
+  - 관계도 (relationship map)
+- 📊 **자동 리포트**: 누적 답변을 기반으로 한 AI 기반 자기 성찰 리포트 생성
+- 🗓️ **주기 설정**: 6/12/24개월 중 원하는 질문 주기를 선택
 - 🎯 **관심사/페르소나**: 사용자 맞춤 질문 제공
 - 📈 **진행도 추적**: 연속 답변일, 자기인식 레벨 관리
 - 🔄 **과거 비교**: 같은 질문에 대한 과거 답변과 현재 답변 비교
@@ -22,6 +27,7 @@ Self Journey는 하루 한 질문을 통해 자신을 돌아보고, AI 분석을
 - **Database**: MySQL 8.0
 - **ORM**: Exposed
 - **Migration**: Flyway
+- **AI**: Google Gemini 2.0 Flash API
 - **Documentation**: OpenAPI 3.0 + Swagger UI
 - **Build**: Gradle Kotlin DSL
 - **Container**: Docker + Docker Compose
@@ -128,7 +134,9 @@ docker compose down -v
 
 - `GET /api/answers/user/{userId}` - 사용자의 모든 답변 조회
 - `GET /api/answers/question/{questionId}` - 특정 질문에 대한 모든 답변 조회
-- `POST /api/answers` - 답변 제출 (AI 분석 포함)
+- `GET /api/answers/user/{userId}/question/{questionId}` - 동일 질문에 대한 사용자 과거 답변 조회
+- `POST /api/answers` - 답변 저장
+- `GET /api/answers/report/{userId}` - 누적 자기 성찰 리포트 조회
 
 ### Progress
 
@@ -163,7 +171,7 @@ docker compose down -v
 - **interests**: 관심사
 - **goal_personas**: 목표 페르소나
 - **questions**: 질문 데이터
-- **answers**: 답변 데이터 (AI 분석 결과 포함)
+- **answers**: 답변 데이터
 - **reports**: 사용자 리포트
 - **user_progress**: 사용자 진행도
 - **notifications**: 알림
@@ -196,10 +204,12 @@ curl -X POST http://localhost:8080/api/users \
   -d '{
     "name": "홍길동",
     "age": 28,
-    "gender": "male",
-    "email": "hong@example.com"
+    "email": "hong@example.com",
+    "planDurationMonths": 6
   }'
 ```
+
+> `planDurationMonths`는 6, 12, 24 중 하나를 선택하며, 선택한 기간만큼 질문이 순환됩니다.
 
 #### 2. 오늘의 질문 조회
 

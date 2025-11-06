@@ -24,11 +24,6 @@ class QuestionRepository {
     fun findByPersonaId(personaId: Long): List<QuestionDTO> =
         Questions.select { Questions.personaId eq personaId }.map { toDTO(it) }
 
-    fun findBySequence(sequence: Int): QuestionDTO? =
-        Questions.select { Questions.id eq sequence.toLong() }
-            .mapNotNull { toDTO(it) }
-            .singleOrNull()
-
     fun findByIds(ids: Set<Long>): Map<Long, QuestionDTO> {
         if (ids.isEmpty()) return emptyMap()
         return Questions

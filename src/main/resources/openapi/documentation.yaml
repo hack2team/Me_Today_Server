@@ -19,7 +19,7 @@ tags:
   - name: Questions
     description: Daily questions management
   - name: Answers
-    description: User answers and AI analysis
+    description: Answer submission, history, and reporting
   - name: Progress
     description: User progress tracking
 
@@ -381,13 +381,15 @@ components:
           type: string
         age:
           type: integer
-        gender:
-          type: string
-          enum: [male, female, other]
+          nullable: true
         email:
           type: string
+          nullable: true
         createdAt:
           type: string
+        planDurationMonths:
+          type: integer
+          description: "Question cycle in months"
 
     CreateUserRequest:
       type: object
@@ -398,13 +400,15 @@ components:
           type: string
         age:
           type: integer
-        gender:
-          type: string
-          enum: [male, female, other]
         email:
           type: string
         password:
           type: string
+          nullable: true
+        planDurationMonths:
+          type: integer
+          nullable: true
+          description: "Allowed values: 6, 12, 24 (default 12)"
 
     QuestionDTO:
       type: object
@@ -507,6 +511,8 @@ components:
     UserReportDTO:
       type: object
       properties:
+        planDurationMonths:
+          type: integer
         totalAnswers:
           type: integer
         uniqueQuestions:

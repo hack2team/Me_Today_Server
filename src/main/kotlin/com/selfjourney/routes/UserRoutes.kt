@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.userRoutes() {
     val userRepository = UserRepository()
+    val allowedDurations = setOf(6, 12, 24)
 
     route("/api/users") {
         get {
@@ -47,7 +48,21 @@ fun Route.userRoutes() {
 
         post {
             val request = call.receive<CreateUserRequest>()
-            val userId = transaction { userRepository.create(request) }
+            val planMonths = (request.planDurationMonths ?: 12)
+            if (planMonths !in allowedDurations) {
+                val allowedList = allowedDurations.joinToString(", ")
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Unit>(
+                        success = false,
+                        error = ErrorDetail("INVALID_PLAN", "planDurationMonths must be one of $allowedList")
+                    )
+                )
+                return@post
+            }
+
+            val normalizedRequest = request.copy(planDurationMonths = planMonths)
+            val userId = transaction { userRepository.create(normalizedRequest) }
             val user = transaction { userRepository.findById(userId) }
             call.respond(HttpStatusCode.Created, ApiResponse(success = true, data = user))
         }
@@ -66,6 +81,19 @@ fun Route.userRoutes() {
             }
 
             val request = call.receive<CreateUserRequest>()
+            val planMonths = request.planDurationMonths
+            if (planMonths != null && planMonths !in allowedDurations) {
+                val allowedList = allowedDurations.joinToString(", ")
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Unit>(
+                        success = false,
+                        error = ErrorDetail("INVALID_PLAN", "planDurationMonths must be one of $allowedList")
+                    )
+                )
+                return@put
+            }
+
             val updated = transaction { userRepository.update(id, request) }
 
             if (updated) {

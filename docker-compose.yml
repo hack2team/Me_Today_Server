@@ -34,6 +34,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       APP_PORT: ${APP_PORT}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8080:8080"
     depends_on:

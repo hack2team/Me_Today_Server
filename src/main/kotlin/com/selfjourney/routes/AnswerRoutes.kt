@@ -4,7 +4,11 @@ import com.selfjourney.domain.*
 import com.selfjourney.repository.AnswerRepository
 import com.selfjourney.repository.ProgressRepository
 import com.selfjourney.repository.QuestionRepository
+import com.selfjourney.repository.UserRepository
+import com.selfjourney.repository.AIAnalysisRepository
+import com.selfjourney.repository.UserGoalRepository
 import com.selfjourney.service.AnswerService
+import com.selfjourney.service.GeminiService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -15,10 +19,19 @@ fun Route.answerRoutes() {
     val answerRepository = AnswerRepository()
     val questionRepository = QuestionRepository()
     val progressRepository = ProgressRepository()
+    val userRepository = UserRepository()
+    val aiAnalysisRepository = AIAnalysisRepository()
+    val userGoalRepository = UserGoalRepository()
+    val geminiService = GeminiService()
+
     val answerService = AnswerService(
         answerRepository,
         questionRepository,
-        progressRepository
+        progressRepository,
+        userRepository,
+        aiAnalysisRepository,
+        userGoalRepository,
+        geminiService
     )
 
     route("/api/answers") {
@@ -130,8 +143,14 @@ fun Route.answerRoutes() {
                 return@get
             }
 
-            val report = answerService.getUserReport(userId)
-            call.respond(ApiResponse(success = true, data = report))
+            // AI 분석 결과를 우선 반환, 없으면 기존 리포트 반환
+            val aiAnalysis = answerService.getLatestAIAnalysis(userId)
+            if (aiAnalysis != null) {
+                call.respond(ApiResponse(success = true, data = aiAnalysis))
+            } else {
+                val report = answerService.getUserReport(userId)
+                call.respond(ApiResponse(success = true, data = report))
+            }
         }
     }
 }

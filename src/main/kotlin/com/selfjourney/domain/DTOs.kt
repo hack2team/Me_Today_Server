@@ -24,7 +24,8 @@ data class UserDTO(
     val name: String,
     val age: Int? = null,
     val email: String? = null,
-    val createdAt: String
+    val createdAt: String,
+    val planDurationMonths: Int
 )
 
 @Serializable
@@ -32,7 +33,8 @@ data class CreateUserRequest(
     val name: String,
     val age: Int? = null,
     val email: String? = null,
-    val password: String? = null
+    val password: String? = null,
+    val planDurationMonths: Int? = null
 )
 
 // Interest DTOs
@@ -225,6 +227,7 @@ data class AnswerHistoryItem(
 
 @Serializable
 data class UserReportDTO(
+    val planDurationMonths: Int,
     val totalAnswers: Int,
     val uniqueQuestions: Int,
     val streak: Int,
@@ -234,6 +237,61 @@ data class UserReportDTO(
     val highlights: List<String>,
     val opportunities: List<String>,
     val recentAnswers: List<AnswerHistoryItem>
+)
+
+// AI Analysis DTOs
+@Serializable
+data class AIAnalysisDTO(
+    val analysisId: Long,
+    val userId: Long,
+    val strengths: String? = null,
+    val weaknesses: String? = null,
+    val values: String? = null,
+    val improvementSuggestions: String? = null,
+    val relationshipMap: String? = null,
+    val analyzedAt: String
+)
+
+@Serializable
+data class GeminiRequest(
+    val contents: List<GeminiContent>
+)
+
+@Serializable
+data class GeminiContent(
+    val parts: List<GeminiPart>
+)
+
+@Serializable
+data class GeminiPart(
+    val text: String
+)
+
+@Serializable
+data class GeminiResponse(
+    val candidates: List<GeminiCandidate>? = null,
+    val error: GeminiError? = null
+)
+
+@Serializable
+data class GeminiCandidate(
+    val content: GeminiContent? = null
+)
+
+@Serializable
+data class GeminiError(
+    val code: Int? = null,
+    val message: String? = null,
+    val status: String? = null
+)
+
+@Serializable
+data class ParsedAIAnalysis(
+    val strengths: String,
+    val weaknesses: String,
+    val values: String,
+    val improvementSuggestions: String,
+    val relationshipMap: String
 )
 
 // Health Check
