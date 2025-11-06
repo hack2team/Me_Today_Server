@@ -250,14 +250,14 @@ data class UserReportDTO(
 // AI Analysis DTOs
 @Serializable
 data class AIAnalysisDTO(
-    val analysisId: Long,
-    val userId: Long,
+    val analysisId: Long?=null,
+    val userId: Long?=null,
     val strengths: String? = null,
     val weaknesses: String? = null,
     val values: String? = null,
     val improvementSuggestions: String? = null,
     val relationshipMap: Map<String, String>? = null,
-    val analyzedAt: String
+    val analyzedAt: String?=null
 )
 
 @Serializable

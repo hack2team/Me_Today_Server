@@ -237,6 +237,31 @@ paths:
                   data:
                     $ref: '#/components/schemas/TodayAnswerStatusResponse'
 
+  /api/answers/today:
+    get:
+      tags:
+        - Answers
+      summary: Check today's answer status by query parameter
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Today's answer status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/TodayAnswerStatusResponse'
+
   /api/answers/history/{userId}:
     get:
       tags:

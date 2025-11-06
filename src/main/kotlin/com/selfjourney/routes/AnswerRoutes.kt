@@ -51,7 +51,6 @@ fun Route.answerRoutes() {
             val answers = answerService.getAnswersByUserId(userId)
             call.respond(ApiResponse(success = true, data = answers))
         }
-
         get("/user/{userId}/today") {
             val userId = call.parameters["userId"]?.toLongOrNull()
             if (userId == null) {
@@ -60,6 +59,23 @@ fun Route.answerRoutes() {
                     ApiResponse<Unit>(
                         success = false,
                         error = ErrorDetail("INVALID_ID", "Invalid user ID")
+                    )
+                )
+                return@get
+            }
+
+            val status = answerService.getTodayAnswerStatus(userId)
+            call.respond(ApiResponse(success = true, data = status))
+        }
+
+        get("/today") {
+            val userId = call.request.queryParameters["userId"]?.toLongOrNull()
+            if (userId == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Unit>(
+                        success = false,
+                        error = ErrorDetail("INVALID_ID", "Query parameter userId is required and must be numeric")
                     )
                 )
                 return@get
@@ -162,12 +178,7 @@ fun Route.answerRoutes() {
 
             // AI 분석 결과를 우선 반환, 없으면 기존 리포트 반환
             val aiAnalysis = answerService.getLatestAIAnalysis(userId)
-            if (aiAnalysis != null) {
-                call.respond(ApiResponse(success = true, data = aiAnalysis))
-            } else {
-                val report = answerService.getUserReport(userId)
-                call.respond(ApiResponse(success = true, data = report))
-            }
+            call.respond(ApiResponse(success = true, data = aiAnalysis))
         }
     }
 }
