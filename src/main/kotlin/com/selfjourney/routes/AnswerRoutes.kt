@@ -52,6 +52,23 @@ fun Route.answerRoutes() {
             call.respond(ApiResponse(success = true, data = answers))
         }
 
+        get("/user/{userId}/today") {
+            val userId = call.parameters["userId"]?.toLongOrNull()
+            if (userId == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiResponse<Unit>(
+                        success = false,
+                        error = ErrorDetail("INVALID_ID", "Invalid user ID")
+                    )
+                )
+                return@get
+            }
+
+            val status = answerService.getTodayAnswerStatus(userId)
+            call.respond(ApiResponse(success = true, data = status))
+        }
+
         get("/question/{questionId}") {
             val questionId = call.parameters["questionId"]?.toLongOrNull()
             if (questionId == null) {

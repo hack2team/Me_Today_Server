@@ -8,6 +8,7 @@ import com.selfjourney.repository.UserRepository
 import com.selfjourney.repository.AIAnalysisRepository
 import com.selfjourney.repository.UserGoalRepository
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.math.max
 import kotlin.math.min
@@ -107,6 +108,20 @@ class AnswerService(
 
     fun getAnswersByQuestionId(questionId: Long): List<AnswerDTO> = transaction {
         answerRepository.findByQuestionId(questionId)
+    }
+
+    fun getTodayAnswerStatus(userId: Long): TodayAnswerStatusResponse = transaction {
+        val progress = progressRepository.findByUserId(userId)
+        val answeredToday = progress?.lastAnsweredAt?.let { storedDate ->
+            runCatching { LocalDate.parse(storedDate) }
+                .getOrNull() == LocalDate.now()
+        } ?: false
+
+        TodayAnswerStatusResponse(
+            userId = userId,
+            answeredToday = answeredToday,
+            lastAnsweredAt = progress?.lastAnsweredAt
+        )
     }
 
     fun getAnswerHistory(userId: Long, date: String?, questionId: Long?): AnswerHistoryResponse = transaction {

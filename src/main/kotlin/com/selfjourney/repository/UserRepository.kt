@@ -53,6 +53,7 @@ class UserRepository {
         return updated > 0
     }
 
+
     fun delete(id: Long): Boolean {
         val deleted = Users.deleteWhere { Users.id eq id }
         return deleted > 0

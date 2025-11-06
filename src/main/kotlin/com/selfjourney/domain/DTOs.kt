@@ -120,6 +120,13 @@ data class CreateAnswerResponse(
     val savedAt: String
 )
 
+@Serializable
+data class TodayAnswerStatusResponse(
+    val userId: Long,
+    val answeredToday: Boolean,
+    val lastAnsweredAt: String? = null
+)
+
 // Report DTOs
 @Serializable
 data class ReportDTO(
